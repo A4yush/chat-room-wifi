@@ -1,14 +1,26 @@
 const express = require('express');
 
-const app = express();
-const PORT = 3000;
-const HOST = '0.0.0.0';
+const http =  require('http');
+const { Server } = require('socket.io');
+const path = require('path');
 
+const app = express(); 
+const server = http.createServer(app);
+const io = new Server(server);
 
-app.get('/', (req, res) => {
-	res.send('Hello from the room');
+app.use(express.static(path.join(__dirname, 'public')));
+
+io.on('connection', (socket) => {
+console.log('someone connected:', socket.id);
+
+socket.on('chat message', (text) =>{
+	io.emit('chat message', text);
 });
 
-app.listen(PORT, HOST, () => {
-	console.log('Server running at http://localhost:${PORT}');
+socket.on('disconnect',() =>{
+	console.log('someone left: ', socket.id);
+});
+});
+server.listen(3000, '0.0.0.0', () => {
+	console.log('Server is running on port 3000');
 });
